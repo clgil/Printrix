@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TallerPrint{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">Dashboard</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-icon text-info">
+            <i class="bi bi-inbox"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.equipos_recibidos }}</div>
+        <div class="stat-card-label">Recibidos</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-primary">
+            <i class="bi bi-tools"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.en_reparacion }}</div>
+        <div class="stat-card-label">En Reparación</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-secondary">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.esperando_piezas }}</div>
+        <div class="stat-card-label">Esperando Piezas</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-success">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.listos }}</div>
+        <div class="stat-card-label">Listos</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-success">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.entregados }}</div>
+        <div class="stat-card-label">Entregados</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-primary">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.clientes }}</div>
+        <div class="stat-card-label">Clientes</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.inventario_critico }}</div>
+        <div class="stat-card-label">Stock Crítico</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-card-icon text-info">
+            <i class="bi bi-person-badge"></i>
+        </div>
+        <div class="stat-card-value">{{ stats.tecnicos_disponibles }}</div>
+        <div class="stat-card-label">Técnicos Disponibles</div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<h2 class="h5 mb-3">Acciones Rápidas</h2>
+<div class="quick-actions">
+    <a href="{{ url_for('ordenes.crear') }}" class="quick-action-btn">
+        <i class="bi bi-plus-circle"></i>
+        <span>Nueva Orden</span>
+    </a>
+    <a href="{{ url_for('clientes.crear') }}" class="quick-action-btn">
+        <i class="bi bi-person-plus"></i>
+        <span>Nuevo Cliente</span>
+    </a>
+    <a href="{{ url_for('equipos.crear') }}" class="quick-action-btn">
+        <i class="bi bi-pc-display"></i>
+        <span>Nuevo Equipo</span>
+    </a>
+    <a href="{{ url_for('inventario.crear') }}" class="quick-action-btn">
+        <i class="bi bi-box-seam"></i>
+        <span>Nuevo Producto</span>
+    </a>
+</div>
+
+<!-- Últimas Órdenes y Stock Crítico -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Últimas Órdenes</span>
+                <a href="{{ url_for('ordenes.index') }}" class="btn btn-sm btn-outline-primary">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Orden</th>
+                                <th>Equipo</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for orden in ordenes_recientes %}
+                            <tr>
+                                <td><strong>{{ orden.numero_orden }}</strong></td>
+                                <td>{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</td>
+                                <td><span class="badge bg-{{ 'info' if orden.estado == 'recibido' else 'primary' if orden.estado in ['diagnostico', 'reparacion'] else 'success' if orden.estado in ['listo', 'entregada'] else 'secondary' }}">{{ orden.estado|title }}</span></td>
+                                <td>{{ orden.fecha_recepcion.strftime('%d/%m/%Y') }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No hay órdenes registradas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-exclamation-triangle me-2"></i>Stock Crítico</span>
+                <a href="{{ url_for('inventario.index') }}" class="btn btn-sm btn-outline-danger">Ver inventario</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for producto in productos_criticos %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="fw-bold">{{ producto.nombre }}</small>
+                            <br>
+                            <small class="text-muted">{{ producto.codigo }}</small>
+                        </div>
+                        <span class="badge bg-danger rounded-pill">{{ producto.stock_actual }}/{{ producto.stock_minimo }}</span>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item text-center py-4 text-muted">
+                        No hay productos con stock crítico
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
